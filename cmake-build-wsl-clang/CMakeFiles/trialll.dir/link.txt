@@ -1,0 +1,1 @@
+/usr/bin/clang++ -g CMakeFiles/trialll.dir/main.cpp.o -o trialll 

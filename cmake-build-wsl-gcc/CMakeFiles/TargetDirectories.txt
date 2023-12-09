@@ -1,0 +1,3 @@
+/mnt/c/Users/nghin/SAXIONYEAR2/Quarter2/APC/trialll/cmake-build-wsl-gcc/CMakeFiles/trialll.dir
+/mnt/c/Users/nghin/SAXIONYEAR2/Quarter2/APC/trialll/cmake-build-wsl-gcc/CMakeFiles/edit_cache.dir
+/mnt/c/Users/nghin/SAXIONYEAR2/Quarter2/APC/trialll/cmake-build-wsl-gcc/CMakeFiles/rebuild_cache.dir
