@@ -1,184 +1,151 @@
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <stack>
-#include <cmath>
 
-using namespace std;
-
-struct Fraction {
-    int numerator;
-    int denominator;
+// Strictly-typed integer template
+template<int N>
+struct Integer {
+    static constexpr int value = N;
 };
 
-double calculate(double operand1, double operand2, char operation) {
-    switch (operation) {
-        case '+':
-            return operand1 + operand2;
-        case '-':
-            return operand1 - operand2;
-        case '*':
-            return operand1 * operand2;
-        case '/':
-            if (operand2 != 0)
-                return operand1 / operand2;
-            else {
-                cerr << "Error: Division by zero!" << endl;
-                return NAN;
-            }
-        case '^':
-            return pow(operand1, operand2);
-        default:
-            cerr << "Error: Invalid operator!" << endl;
-            return NAN;
-    }
+// Addition operation
+template<int N, int M>
+constexpr Integer<N + M> add(Integer<N> n, Integer<M> m) {
+    return Integer<N + M>();
 }
 
-bool isOperator(char c) {
-    return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
+// Overloaded addition operator
+template<int N, int M>
+constexpr Integer<N + M> operator+(Integer<N> n, Integer<M> m) {
+    return Integer<N + M>();
 }
 
-bool isFraction(const string& str) {
-    return str.find('/') != string::npos;
+// Multiplication operation
+template<int N, int M>
+constexpr Integer<N * M> multiply(Integer<N> n, Integer<M> m) {
+    return Integer<N * M>();
 }
 
-bool isSquareRoot(const string& str) {
-    return str.substr(0, 4) == "sqrt";
+// Overloaded multiplication operator
+template<int N, int M>
+constexpr Integer<N * M> operator*(Integer<N> n, Integer<M> m) {
+    return Integer<N * M>();
 }
 
-bool isLog(const string& str) {
-    return str.substr(0, 3) == "log" && str.size() > 3 && str[3] == '(' && str.back() == ')';
+// Division operation
+template<int N, int M>
+constexpr Integer<N / M> divide(Integer<N> n, Integer<M> m) {
+    return Integer<N / M>();
 }
 
-bool isPower(const string& str) {
-    return str == "^";
+// Overloaded division operator
+template<int N, int M>
+constexpr Integer<N / M> operator/(Integer<N> n, Integer<M> m) {
+    return Integer<N / M>();
 }
 
-Fraction parseFraction(const string& str) {
-    stringstream ss(str);
-    Fraction fraction;
-    char delimiter;
-    ss >> fraction.numerator >> delimiter >> fraction.denominator;
-    return fraction;
-}
-
-double fractionToDouble(const Fraction& fraction) {
-    return static_cast<double>(fraction.numerator) / fraction.denominator;
-}
-
-double evaluateExpression(const string& expression) {
-    istringstream iss(expression);
-    stack<double> operands;
-    stack<char> operators;
-    // Inside the evaluateExpression function, before token processing
-    string processedExpression = expression;
-    processedExpression.erase(remove(processedExpression.begin(), processedExpression.end(), ' '), processedExpression.end());
-    string token;
-    while (iss >> token) {
-        if (isdigit(token[0]) || (token[0] == '-' && token.length() > 1)) {
-            if (isFraction(token)) {
-                Fraction frac = parseFraction(token);
-                double value = fractionToDouble(frac);
-                operands.push(value);
-            } else {
-                double number;
-                stringstream(token) >> number;
-                operands.push(number);
-            }
-        } else if (isOperator(token[0])) {
-            while (!operators.empty() && operators.top() != '(' &&
-                   ((token[0] == '*' || token[0] == '/' || token[0] == '^') ||
-                    (token[0] == '+' || token[0] == '-')) &&
-                   (operators.top() == '*' || operators.top() == '/' || operators.top() == '^')) {
-                double operand2 = operands.top();
-                operands.pop();
-                double operand1 = operands.top();
-                operands.pop();
-                char op = operators.top();
-                operators.pop();
-                double result = calculate(operand1, operand2, op);
-                operands.push(result);
-            }
-            operators.push(token[0]);
-        } else if (isSquareRoot(token)) {
-            string number = token.substr(5, token.size() - 6);
-            double value;
-            stringstream(number) >> value;
-            operands.push(sqrt(value));
-        } else if (isLog(token)) {
-            string number = token.substr(4, token.size() - 5); // Extract the number within parentheses
-            double value;
-            stringstream(number) >> value;
-
-            if (value <= 0) {
-                cerr << "Error: Logarithm of a non-positive number or zero!" << endl;
-                return NAN;
-            }
-
-            operands.push(log10(value)); // Calculate base-10 logarithm
-        } else if (isPower(token)) {
-            while (!operators.empty() && operators.top() == '^') {
-                double operand2 = operands.top();
-                operands.pop();
-                double operand1 = operands.top();
-                operands.pop();
-                char op = operators.top();
-                operators.pop();
-                double result = pow(operand1, operand2);
-                operands.push(result);
-            }
-            operators.push('^');
-        } else if (token[0] == '(') {
-            operators.push(token[0]);
-        } else if (token[0] == ')') {
-            while (!operators.empty() && operators.top() != '(') {
-                double operand2 = operands.top();
-                operands.pop();
-                double operand1 = operands.top();
-                operands.pop();
-                char op = operators.top();
-                operators.pop();
-                double result = calculate(operand1, operand2, op);
-                operands.push(result);
-            }
-            if (!operators.empty()) {
-                operators.pop();
-            } else {
-                cerr << "Error: Unmatched parenthesis!" << endl;
-                return NAN;
-            }
+// Power operation using parameter packs and fold expression
+template<int N, int M>
+struct Power {
+    static constexpr int result = []() constexpr {
+        int res = 1;
+        for (int i = 0; i < M; ++i) {
+            res *= N;
         }
-    }
+        return res;
+    }();
+};
 
-    while (!operators.empty()) {
-        double operand2 = operands.top();
-        operands.pop();
-        double operand1 = operands.top();
-        operands.pop();
-        char op = operators.top();
-        operators.pop();
-        double result = calculate(operand1, operand2, op);
-        operands.push(result);
-    }
 
-    return operands.top();
+template<int N>
+struct Power<N, 1> {
+    static constexpr int result = N;
+};
+
+// Specialization for Power<N, 0> (N^0 = 1)
+template<int N>
+struct Power<N, 0> {
+    static constexpr int result = 1;
+};
+
+// Logarithm operation
+template<int Base, int N>
+struct Logarithm {
+    static constexpr int value = Logarithm<Base, N / Base>::value + 1;
+};
+
+template<int Base>
+struct Logarithm<Base, 1> {
+    static constexpr int value = 0;
+};
+
+// Square root operation
+template<int N, int I = 1>
+struct Sqrt {
+    static constexpr double value = 0.5 * (Sqrt<N, I - 1>::value + N / Sqrt<N, I - 1>::value);
+};
+
+template<int N>
+struct Sqrt<N, 0> {
+    static constexpr double value = 1.0;
+};
+
+template<int N>
+constexpr double squareRoot() {
+    return Sqrt<N, 20>::value; // Adjust the number of iterations as needed
+}
+
+// Factorial operation
+template<int N>
+struct Factorial {
+    static constexpr int value = N * Factorial<N - 1>::value;
+};
+
+template<>
+struct Factorial<0> {
+    static constexpr int value = 1;
+};
+
+template<int N>
+consteval int getValue(Integer<N> n) {
+    return n.value;
 }
 
 int main() {
-    string expression;
+    // Perform calculations at compile time
+    constexpr Integer<2> two;
+    constexpr Integer<4> four;
 
-    while (true) {
-        cout << "Enter an expression (or 'q' to quit): ";
-        getline(cin, expression);
+    // Addition
+    constexpr auto six = two + four * two;
+    std::cout << "Two plus four is: " << getValue(six) << std::endl;
 
-        if (expression == "q")
-            break;
+    // Multiplication
+    constexpr auto eight = two * four;
+    std::cout << "Two times four is: " << getValue(eight) << std::endl;
 
-        double result = evaluateExpression(expression);
-        if (!isnan(result)) {
-            cout << "Result: " << result << endl;
-        }
-    }
+    // Division
+    constexpr auto twoDivFour = four / two;
+    std::cout << "Four divided by two is: " << getValue(twoDivFour) << std::endl;
+
+    // Power (2^4)
+    constexpr auto result = Power<2, 4>();
+    std::cout << "Two to the power of four is: " << result.result << std::endl;
+
+
+    // Logarithm (log base 2 of 8)
+    constexpr auto logResult = Logarithm<2, 8>();
+    std::cout << "Log base 2 of 8 is: " << logResult.value << std::endl;
+
+    // Print the compile-time computed square roots
+    std::cout << "Square root of 16: " << squareRoot<16>() << std::endl;
+    std::cout << "Square root of 27: " << squareRoot<27>() << std::endl;
+
+    // Factorial
+    constexpr auto fact_4 = Factorial<4>();
+    std::cout << "Factorial of 4 is: " << fact_4.value << std::endl;
+
+    // Factorial
+    constexpr auto fact_6 = Factorial<6>();
+    std::cout << "Factorial of 6 is: " << fact_6.value << std::endl;
 
     return 0;
 }
